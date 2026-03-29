@@ -90,6 +90,19 @@ h1 { font-size: 20px; font-weight: 600; color: #7ecfee; letter-spacing: 2px; tex
 .champ-info .pending { font-size: 12px; color: #2a5070; font-style: italic; }
 .final-bracket-area { margin-top: 8px; }
 
+/* PASSWORD */
+.lock-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:200; }
+.lock-box { background:#0b1a2c;border:1px solid #2a6090;border-radius:12px;padding:24px;min-width:280px;max-width:320px;width:90%;text-align:center; }
+.lock-box h3 { font-size:14px;color:#7ecfee;margin-bottom:6px; }
+.lock-box p  { font-size:11px;color:#3a6080;margin-bottom:16px; }
+.lock-box input { width:100%;padding:9px;background:#06101c;border:1px solid #1a3a5c;border-radius:5px;color:#7ecfee;font-size:14px;text-align:center;letter-spacing:3px;margin-bottom:10px; }
+.lock-box .err { font-size:11px;color:#e05050;margin-bottom:8px;min-height:16px; }
+.lock-btns { display:flex;gap:8px; }
+.lock-btns button { flex:1;padding:9px;border-radius:5px;font-size:13px;cursor:pointer; }
+.lock-btns .ok { border:1px solid #1a8050;background:#0a2a1a;color:#4af090; }
+.lock-btns .cancel { border:1px solid #2a6090;background:#0d2a45;color:#7ecfee; }
+.admin-badge { display:inline-block;font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(74,240,144,.1);color:#4af090;border:1px solid rgba(74,240,144,.2);margin-left:8px;vertical-align:middle; }
+
 /* MODAL */
 .modal-bg { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:100; }
 .modal { background:#0b1a2c;border:1px solid #2a6090;border-radius:12px;padding:22px;min-width:280px;max-width:340px;width:90%; }
@@ -176,8 +189,8 @@ h1 { font-size: 20px; font-weight: 600; color: #7ecfee; letter-spacing: 2px; tex
       </div>
       <div class="paste-hint">Cola vários nomes — vírgula, ponto e vírgula ou nova linha</div>
       <div class="btn-row">
-        <button class="gen-btn gen-bronze" onclick="generate('bronze')">↗ Gerar Sorteio</button>
-        <button class="rst-btn" onclick="resetTier('bronze')">↺</button>
+        <button class="gen-btn gen-bronze" onclick="requireAdmin(()=>generate('bronze'),'Password para gerar o bracket Bronze')">↗ Gerar Sorteio</button>
+        <button class="rst-btn" onclick="requireAdmin(()=>resetTier('bronze'),'Password de admin')">↺</button>
       </div>
     </div>
     <div id="status-bronze" class="status"></div>
@@ -198,8 +211,8 @@ h1 { font-size: 20px; font-weight: 600; color: #7ecfee; letter-spacing: 2px; tex
       </div>
       <div class="paste-hint">Cola vários nomes — vírgula, ponto e vírgula ou nova linha</div>
       <div class="btn-row">
-        <button class="gen-btn gen-silver" onclick="generate('silver')">↗ Gerar Sorteio</button>
-        <button class="rst-btn" onclick="resetTier('silver')">↺</button>
+        <button class="gen-btn gen-silver" onclick="requireAdmin(()=>generate('silver'),'Password para gerar o bracket Silver')">↗ Gerar Sorteio</button>
+        <button class="rst-btn" onclick="requireAdmin(()=>resetTier('silver'),'Password de admin')">↺</button>
       </div>
     </div>
     <div id="status-silver" class="status"></div>
@@ -220,8 +233,8 @@ h1 { font-size: 20px; font-weight: 600; color: #7ecfee; letter-spacing: 2px; tex
       </div>
       <div class="paste-hint">Cola vários nomes — vírgula, ponto e vírgula ou nova linha</div>
       <div class="btn-row">
-        <button class="gen-btn gen-gold" onclick="generate('gold')">↗ Gerar Sorteio</button>
-        <button class="rst-btn" onclick="resetTier('gold')">↺</button>
+        <button class="gen-btn gen-gold" onclick="requireAdmin(()=>generate('gold'),'Password para gerar o bracket Gold')">↗ Gerar Sorteio</button>
+        <button class="rst-btn" onclick="requireAdmin(()=>resetTier('gold'),'Password de admin')">↺</button>
       </div>
     </div>
     <div id="status-gold" class="status"></div>
@@ -242,8 +255,8 @@ h1 { font-size: 20px; font-weight: 600; color: #7ecfee; letter-spacing: 2px; tex
       </div>
       <div class="paste-hint">Cola vários nomes — vírgula, ponto e vírgula ou nova linha</div>
       <div class="btn-row">
-        <button class="gen-btn gen-plat" onclick="generate('plat')">↗ Gerar Sorteio</button>
-        <button class="rst-btn" onclick="resetTier('plat')">↺</button>
+        <button class="gen-btn gen-plat" onclick="requireAdmin(()=>generate('plat'),'Password para gerar o bracket Platinum')">↗ Gerar Sorteio</button>
+        <button class="rst-btn" onclick="requireAdmin(()=>resetTier('plat'),'Password de admin')">↺</button>
       </div>
     </div>
     <div id="status-plat" class="status"></div>
@@ -563,6 +576,7 @@ function closeModal(){
 
 function confirmMatch(){
   if(!activeMatch)return;
+  if(!isAdmin){requireAdmin(()=>confirmMatch(),'Password para introduzir scores');return;}
   const s1d1=parseFloat(document.getElementById('s1d1').value)||0;
   const s1d2=parseFloat(document.getElementById('s1d2').value)||0;
   const s2d1=parseFloat(document.getElementById('s2d1').value)||0;
@@ -623,6 +637,7 @@ function renderList(tier){
 }
 
 function addPlayer(tier){
+  if(!isAdmin){requireAdmin(()=>addPlayer(tier),'Password para adicionar jogadores');return;}
   const inp=document.getElementById('inp-'+tier);
   const raw=inp.value.trim();if(!raw)return;
   raw.split(/[,;\n\r\t]+/).map(n=>n.trim()).filter(Boolean).forEach(n=>players[tier].push(n));
@@ -631,6 +646,7 @@ function addPlayer(tier){
 
 function handlePaste(e,tier){
   e.preventDefault();
+  if(!isAdmin){requireAdmin(()=>{},'Password para adicionar jogadores');return;}
   const text=(e.clipboardData||window.clipboardData).getData('text');
   text.split(/[,;\n\r\t]+/).map(n=>n.trim()).filter(Boolean).forEach(n=>players[tier].push(n));
   document.getElementById('inp-'+tier).value='';renderList(tier);
@@ -668,10 +684,58 @@ function switchTab(t){
   else if(TIERS.includes(t)){drawBracket(t);}
 }
 
+// ── PASSWORD ──────────────────────────────────────────────────────────────
+const ADMIN_PASS = '!Lindaemaravilhosa1'; // muda esta password
+let isAdmin = false;
+let pendingAction = null; // function to call after auth
+
+function requireAdmin(action, desc){
+  if(isAdmin){ action(); return; }
+  pendingAction=action;
+  document.getElementById('lock-desc').textContent=desc||'Introduz a password de admin';
+  document.getElementById('lock-input').value='';
+  document.getElementById('lock-err').textContent='';
+  document.getElementById('lock-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('lock-input').focus(),100);
+}
+
+function checkPass(){
+  const val=document.getElementById('lock-input').value;
+  if(val===ADMIN_PASS){
+    isAdmin=true;
+    document.getElementById('lock-modal').style.display='none';
+    // Show admin badge
+    document.querySelector('h1').innerHTML+='<span class="admin-badge">ADMIN</span>';
+    if(pendingAction){ pendingAction(); pendingAction=null; }
+  } else {
+    document.getElementById('lock-err').textContent='Password incorrecta.';
+    document.getElementById('lock-input').value='';
+    document.getElementById('lock-input').focus();
+  }
+}
+
+function closeLock(){
+  document.getElementById('lock-modal').style.display='none';
+  pendingAction=null;
+}
+
 // Init
 TIERS.forEach(t=>{renderList(t);setupCanvasClick(t);drawBracket(t);});
 setupCanvasClick('final');
 renderChampGrid();
 </script>
+<!-- PASSWORD MODAL -->
+<div id="lock-modal" class="lock-overlay" style="display:none">
+  <div class="lock-box">
+    <h3>🔒 Área Restrita</h3>
+    <p id="lock-desc">Introduz a password de admin</p>
+    <input type="password" id="lock-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPass()">
+    <div class="err" id="lock-err"></div>
+    <div class="lock-btns">
+      <button class="cancel" onclick="closeLock()">Cancelar</button>
+      <button class="ok" onclick="checkPass()">Entrar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
