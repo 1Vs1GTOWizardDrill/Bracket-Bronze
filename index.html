@@ -608,8 +608,9 @@ function rrect(ctx,x,y,w,h,r,fill,stroke){
 // Canvas click — setup once per canvas
 function setupCanvas(tier){
   const cv=document.getElementById('cv-'+tier);
-  if(!cv)return;
-  cv.onclick=e=>{
+  if(!cv||cv._clickBound)return;
+  cv._clickBound=true;
+  cv.addEventListener('click',e=>{
     const rect=cv.getBoundingClientRect();
     const scale=cv.width/rect.width;
     const mx=(e.clientX-rect.left)*scale, my=(e.clientY-rect.top)*scale;
@@ -618,7 +619,7 @@ function setupCanvas(tier){
         requireAdmin(()=>openModal(z.tier,z.ri,z.mi),'Password para introduzir scores');break;
       }
     }
-  };
+  });
 }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────
@@ -707,9 +708,10 @@ function generate(tier){
   const n=players[tier].length; let size=1; while(size<n)size<<=1;
   const st=document.getElementById('status-'+tier);
   if(st) st.textContent=`✓ Bracket gerado — ${n} jogadores · ${size-n} bye(s)`;
-  setupCanvas(tier);
-  // Auto-switch to bracket tab
+  // Auto-switch to bracket tab first so canvas exists in DOM
   switchTab(tier+'-bracket');
+  setupCanvas(tier);
+  drawBracket(tier);
 }
 
 function resetTier(tier){
