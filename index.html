@@ -756,6 +756,8 @@ function afterMatch(tier){
   drawBracket(tier);
   const champ=getChamp(tier);
   if(champ){ renderChampGrid(); buildFinal(); drawBracket('final'); }
+  // Save session automatically after each match
+  try{ saveSession(); } catch(e){}
 }
 
 // ── SETUP UI ──────────────────────────────────────────────────────────────
@@ -943,12 +945,7 @@ function showToast(msg, color){
   toast._timer=setTimeout(()=>toast.style.opacity='0', 2500);
 }
 
-// Auto-save every time a match is confirmed
-const _origAfterMatch=afterMatch;
-function afterMatch(tier){
-  _origAfterMatch(tier);
-  saveSession();
-}
+// Auto-save handled inside afterMatch()
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 // Init — site is hidden until password entered
